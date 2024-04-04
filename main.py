@@ -10,6 +10,7 @@ class DominoBoard:
     def is_valid_position(self, row, col):
         return 0 <= row < self.rows and 0 <= col < self.cols
 
+    # Esta weá está rara x la chucha
     def can_place_domino(self, row, col, direction):
         if direction == 'horizontal':
             return ((self.is_valid_position(row, col + 1) and self.board[row][col + 1] == 0) or \
@@ -58,6 +59,7 @@ class DominoBoard:
                             self.find_solutions(r, c + 1, found_solutions)
                         self.remove_domino(r, c, 'vertical')  
 
+    # Esta weá tmb ta rara pq no verifica na >:c
     def verify_after_placing(self, row, col):
         # Verificar si hay una pieza con orientación diferente en la misma fila
         for c in range(self.cols):
