@@ -36,6 +36,64 @@ class DominoBoard:
                 if self.board[row][col] == 0:
                     return False
         return True
+    
+    def verify_after_placing(self, row, col, direction):
+        condition = 0
+        found_vertical_row = False
+        found_vertical_col = False
+
+        found_horizontal_row = False
+        found_horizontal_col = False
+
+        if direction == 'horizontal':
+            for r in range(self.rows):
+                if self.board[r][col] == 2:
+                    condition += 1
+                    found_vertical_row = True
+                    break
+            for c in range(self.cols):
+                if self.board[row][c] == 2:
+                    condition += 1
+                    found_vertical_col = True
+                    break
+            if condition == 2:
+                return True
+
+            if not found_vertical_col:
+                for c in range(self.cols):
+                    if self.board[row][c] == 0:
+                        return True
+            if not found_vertical_row:
+                for r in range(self.rows-1):
+                    if self.board[r][col] == 0 and self.board[r+1][col] == 0:
+                        return True
+
+        # Aquí está el problema
+        elif direction == 'vertical':
+            for r in range(self.rows):
+                if self.board[r][col] == 1:
+                    condition += 1
+                    found_horizontal_row = True
+                    break
+            for c in range(self.cols):
+                if self.board[row][c] == 1:
+                    condition += 1
+                    found_horizontal_col = True
+                    break
+            if condition == 2:
+                return True
+
+            if not found_horizontal_col:
+                for c in range(self.cols-1):
+                    if self.board[row][c] == 0 and self.board[row][c+1] == 0:
+                        return True
+            if not found_horizontal_row:
+                for r in range(self.rows):
+                    if self.board[r][col] == 0:
+                        return True
+        
+        condition = 0
+        return False  # La pieza actual no cumple con las condiciones, no continuar con esta solución
 
     def find_solutions(self, row=0, col=0, found_solutions=set()):
         if self.is_solution():
@@ -50,31 +108,14 @@ class DominoBoard:
                 if self.board[r][c] == 0:
                     if self.can_place_domino(r, c, 'horizontal'):
                         self.place_domino(r, c, 'horizontal')
-                        if self.verify_after_placing(r, c):
+                        if self.verify_after_placing(r, c, 'horizontal'):
                             self.find_solutions(r, c + 1, found_solutions)
                         self.remove_domino(r, c, 'horizontal')
                     if self.can_place_domino(r, c, 'vertical'):
                         self.place_domino(r, c, 'vertical')
-                        if self.verify_after_placing(r, c):
+                        if self.verify_after_placing(r, c, 'vertical'):
                             self.find_solutions(r, c + 1, found_solutions)
                         self.remove_domino(r, c, 'vertical')  
-
-    # Esta weá tmb ta rara pq no verifica na >:c
-    def verify_after_placing(self, row, col):
-        # Verificar si hay una pieza con orientación diferente en la misma fila
-        for c in range(self.cols):
-            if c != col and self.board[row][c] != 0 and self.board[row][c] != self.board[row][col]:
-                return True  # Hay una pieza con orientación diferente en la misma fila, continuar con esta solución
-        # Verificar si hay una pieza con orientación diferente en la misma columna
-        for r in range(self.rows):
-            if r != row and self.board[r][col] != 0 and self.board[r][col] != self.board[row][col]:
-                return True  # Hay una pieza con orientación diferente en la misma columna, continuar con esta solución
-        # Si no hay piezas con orientación diferente en la misma fila o columna, verificar si hay espacio para una nueva pieza con orientación diferente
-        if any(self.board[row][c] == 0 for c in range(self.cols) if c != col) or \
-        any(self.board[r][col] == 0 for r in range(self.rows) if r != row):
-            return True  # Hay espacio para una nueva pieza con orientación diferente, continuar con esta solución
-        return False  # No hay espacio para una nueva pieza con orientación diferente, descartar esta solución
-
 
 
     def remove_domino(self, row, col, direction):
@@ -93,7 +134,7 @@ class DominoBoard:
             print(f"Solution {i + 1}:")
             for row in solution:
                 print(row)
-            print("\n")  # Print a newline for better readability between solutions
+            print("\n")
 
 
 # Todavía no funciona la weá q rabia :c
