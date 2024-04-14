@@ -52,32 +52,41 @@ class DominoBoard:
             if 0 in row:
                 return False
         return True
-    
-    def has_conflict(self, row, col, direction):
-        if direction == 'horizontal':
-            # Check if there is a vertical domino in the same column
-            vertical_in_col = any(self.board[r][col] == 2 or (col + 1 < self.cols and self.board[r][col + 1] == 2) for r in range(self.rows))
-            # Check if there is a horizontal domino in the same row
-            horizontal_in_row = 1 in self.board[row]
-            # Check if there is enough space in the column for a vertical domino
-            space_in_col = any(all(self.board[r+i][col] == 0 for i in range(2)) for r in range(self.rows - 1))
-            # Check if there is enough space in the row for another horizontal domino
-            space_in_row = any(self.board[row][c:c+2] == [0, 0] for c in range(self.cols - 1))
-            # Return True if there is a conflict
-            return (horizontal_in_row and not vertical_in_col and not space_in_col) or (not horizontal_in_row and vertical_in_col and not space_in_row) or (not horizontal_in_row and not vertical_in_col and not (space_in_row and space_in_col))
-        elif direction == 'vertical':
-            # Check if there is a horizontal domino in the same row
-            horizontal_in_row = 1 in self.board[row]
-            # Check if there is a vertical domino in the same column
-            vertical_in_col = any(self.board[r][col] == 2 for r in range(self.rows))
-            # Check if there is enough space in the row for a horizontal domino
-            space_in_row = any(self.board[row][c:c+2] == [0, 0] for c in range(self.cols - 1))
-            # Check if there is enough space in the column for another vertical domino
-            space_in_col = any(all(self.board[r+i][col] == 0 for i in range(2)) for r in range(self.rows - 1))
-            # Return True if there is a conflict
-            return (vertical_in_col and not horizontal_in_row and not space_in_row) or (not vertical_in_col and horizontal_in_row and not space_in_col) or (not vertical_in_col and not horizontal_in_row and not (space_in_col and space_in_row))
-        return False
 
+    def has_row_conflict(self, row, col, direction):
+        if direction == 'horizontal':
+            # Check if there's a vertical tile in the same row
+            if 2 in self.board[row]:
+                return False
+            # Check if there's vertical space in the row for a horizontal tile
+            elif 0 in self.board[row]:
+                return False
+        elif direction == 'vertical':
+            # Check if there's a horizontal tile in the same row
+            if 1 in self.board[row]:
+                return False
+            # Check if there's horizontal space to place a vertical tile
+            elif col + 1 < self.cols and self.board[row][col:col+2] == [0, 0]:
+                return False
+        return True
+
+    def has_column_conflict(self, row, col, direction):
+        if direction == 'vertical':
+            # Check if there's a horizontal tile in the same column
+            if any(self.board[r][col] == 1 for r in range(self.rows)):
+                return False
+            # Check if there's horizontal space in the column for a vertical tile
+            elif any(self.board[r][col] == 0 for r in range(self.rows)):
+                return False
+        elif direction == 'horizontal':
+            # Check if there's a vertical tile in the same column
+            if any(self.board[r][col] == 2 for r in range(self.rows)):
+                return False
+            # Check if there's vertical space to place a horizontal tile
+            elif row + 1 < self.rows and [self.board[r][col] for r in range(row, min(row + 2, self.rows))] == [0, 0]:
+                return False
+        return True
+    
     def find_solutions(self, row=0, col=0):
         if self.is_solution():
             solution = tuple(tuple(row) for row in self.board)
@@ -91,12 +100,12 @@ class DominoBoard:
                 if self.board[r][c] == 0:
                     if self.can_place_domino(r, c, 'horizontal'):
                         self.place_domino(r, c, 'horizontal')
-                        if not self.has_conflict(r, c, 'horizontal'):
+                        if not self.has_row_conflict(r, c, 'horizontal') and not self.has_column_conflict(r, c, 'horizontal'):
                             self.find_solutions(r, c + 2 if c + 2 < self.cols else r + 1)
                         self.remove_domino(r, c, 'horizontal')
                     if self.can_place_domino(r, c, 'vertical'):
                         self.place_domino(r, c, 'vertical')
-                        if not self.has_conflict(r, c, 'vertical'):
+                        if not self.has_row_conflict(r, c, 'vertical') and not self.has_column_conflict(r, c, 'vertical'):
                             self.find_solutions(r, c + 1 if c + 1 < self.cols else r + 1)
                         self.remove_domino(r, c, 'vertical')
 
@@ -117,8 +126,8 @@ class DominoBoard:
             print("\n")
 
 # 4x3 board working, 4x4 not: 2 solutions wrong
-rows = 5
-cols = 6
+rows = 4
+cols = 4
 domino_board = DominoBoard(rows, cols)
 start_time = time.time()
 domino_board.find_solutions()
