@@ -1,26 +1,6 @@
 import time
 
 class DominoBoard:
-    """
-    Represents a domino board.
-
-    Attributes:
-    - rows (int): The number of rows in the board.
-    - cols (int): The number of columns in the board.
-    - board (list): A 2D list representing the board.
-    - solutions (list): A list to store all the valid solutions found.
-
-    Methods:
-    - __init__(self, rows, cols): Initializes a new instance of the DominoBoard class.
-    - is_valid_position(self, row, col): Checks if the given position is valid on the board.
-    - can_place_domino(self, row, col, direction): Checks if a domino can be placed at the given position and direction.
-    - place_domino(self, row, col, direction): Places a domino at the given position and direction.
-    - is_solution(self): Checks if the current board configuration is a valid solution.
-    - verify_after_placing(self, row, col, direction): Verifies if the current board configuration is valid after placing a domino.
-    - find_solutions(self, row=0, col=0, found_solutions=set()): Finds all the valid solutions for the domino board.
-    - remove_domino(self, row, col, direction): Removes a domino from the given position and direction.
-    - print_all_solutions(self): Prints all the valid solutions found for the domino board.
-    """
 
     def __init__(self, rows, cols):
         self.rows = rows
@@ -55,38 +35,35 @@ class DominoBoard:
 
     def has_row_conflict(self, row, col, direction):
         if direction == 'horizontal':
-            # Check if there's a vertical tile in the same row
             if 2 in self.board[row]:
                 return False
-            # Check if there's vertical space in the row for a horizontal tile
             elif 0 in self.board[row]:
                 return False
         elif direction == 'vertical':
-            # Check if there's a horizontal tile in the same row
-            if 1 in self.board[row]:
+            if any(self.board[row][c] == 1 for c in range(self.cols)):
                 return False
-            # Check if there's horizontal space to place a vertical tile
-            elif col + 1 < self.cols and self.board[row][col:col+2] == [0, 0]:
-                return False
+            else:
+                for c in range(col, self.cols - 1):
+                    if self.board[row][c] == self.board[row][c + 1] == 0:
+                        return False
         return True
 
     def has_column_conflict(self, row, col, direction):
         if direction == 'vertical':
-            # Check if there's a horizontal tile in the same column
             if any(self.board[r][col] == 1 for r in range(self.rows)):
                 return False
-            # Check if there's horizontal space in the column for a vertical tile
             elif any(self.board[r][col] == 0 for r in range(self.rows)):
                 return False
         elif direction == 'horizontal':
-            # Check if there's a vertical tile in the same column
             if any(self.board[r][col] == 2 for r in range(self.rows)):
                 return False
-            # Check if there's vertical space to place a horizontal tile
-            elif row + 1 < self.rows and [self.board[r][col] for r in range(row, min(row + 2, self.rows))] == [0, 0]:
-                return False
+            else:
+                for r in range(row, self.rows - 1):
+                    if self.board[r][col] == self.board[r + 1][col] == 0:
+                        return False
         return True
     
+    # Backtracking algorithm; As the board is filled from left to right, top to bottom, the algorithm will always not consider all possible solutions.
     def find_solutions(self, row=0, col=0):
         if self.is_solution():
             solution = tuple(tuple(row) for row in self.board)
@@ -125,9 +102,9 @@ class DominoBoard:
                 print(row)
             print("\n")
 
-# 4x3 board working, 4x4 not: 2 solutions wrong
+# There would always be solutions not considered, because of the way the algorithm is implemented.
 rows = 4
-cols = 4
+cols = 3
 domino_board = DominoBoard(rows, cols)
 start_time = time.time()
 domino_board.find_solutions()
