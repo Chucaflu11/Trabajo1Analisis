@@ -9,6 +9,9 @@ class DominoBoard:
         self.solutions = []
         self.found_solutions = set()
 
+    def is_valid_board(self):
+        return True if self.rows * self.cols % 2 == 0 else False
+
     def is_valid_position(self, row, col):
         return 0 <= row < self.rows and 0 <= col < self.cols
 
