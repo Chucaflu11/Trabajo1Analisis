@@ -2,6 +2,8 @@ import pygame
 import sys
 import os
 
+from algorithm import DominoBoard
+
 def load_assets(directory):
     assets = {}
     for file_name in os.listdir(directory):
@@ -114,7 +116,7 @@ class Board:
                 # Draw a black border around the cell
                 pygame.draw.rect(screen, pygame.Color('black'), pygame.Rect(cell_x, cell_y, self.cell_width, self.cell_height), 1)
 
-def print_values(value1, value2):
+def set_board(value1, value2):
     print("Valor 1:", value1.get_text())
     print("Valor 2:", value2.get_text())
 
@@ -132,14 +134,14 @@ def main():
     input_box2 = InputBox(1101, 397, 105, 27)
     input_boxes = [input_box1, input_box2]
 
-    print_button = Button(950, 500, assets['SET'], lambda: print_values(input_box1, input_box2))
-    dropdown_button = Button(500, 85, assets['Icono_Lista_Soluciones'], lambda: print_values(input_box1, input_box2))
-    right_button = Button(440, 500, assets['Flecha_Siguiente'], lambda: print_values(input_box1, input_box2))
-    left_button = Button(90, 500, assets['Flecha_Anterior'], lambda: print_values(input_box1, input_box2))
+    set_button = Button(950, 500, assets['SET'], lambda: set_board(input_box1, input_box2))
+    dropdown_button = Button(500, 85, assets['Icono_Lista_Soluciones'], lambda: set_board(input_box1, input_box2))
+    right_button = Button(440, 500, assets['Flecha_Siguiente'], lambda: set_board(input_box1, input_box2))
+    left_button = Button(90, 500, assets['Flecha_Anterior'], lambda: set_board(input_box1, input_box2))
 
     done = False
 
-    buttons = [print_button, dropdown_button, right_button, left_button]
+    buttons = [set_button, dropdown_button, right_button, left_button]
 
     while not done:
         handle_input_events(input_boxes, buttons)
@@ -151,7 +153,7 @@ def main():
         for box in input_boxes:
             box.draw(screen)
 
-        print_button.draw(screen)
+        set_button.draw(screen)
         dropdown_button.draw(screen)
         right_button.draw(screen)
         left_button.draw(screen)
