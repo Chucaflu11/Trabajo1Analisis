@@ -11,6 +11,7 @@ matrix = []
 
 # Global variable to store the current solution index
 current_solution_index = 0
+calculating = False
 
 def load_assets(directory):
     assets = {}
@@ -98,6 +99,8 @@ class Button:
                 threading.Thread(target=self.run_callback).start()
 
     def run_callback(self):
+        global calculating
+        calculating = True
         self.callback()
         self.is_running = False
 
@@ -148,6 +151,7 @@ def set_board(value1, value2):
     global solutions
     global matrix
     global board
+    global calculating
     try:
         dominoBoard = DominoBoard(int(value1.get_text()), int(value2.get_text()))
         if dominoBoard.is_valid_board():
@@ -186,6 +190,7 @@ def main():
     global solutions
     global matrix
     global board
+    global calculating
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
@@ -217,6 +222,11 @@ def main():
         set_button.draw(screen)
         right_button.draw(screen)
         left_button.draw(screen)
+
+        if calculating and not solutions:
+            font = pygame.font.Font(None, 36)
+            text = font.render("Calculating...", True, (9, 55, 58))
+            screen.blit(text, (210, 290))
 
         pygame.display.flip()
         clock.tick(30)
