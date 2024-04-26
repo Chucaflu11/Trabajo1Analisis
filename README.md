@@ -1,3 +1,35 @@
+# Instrucciones de Inicio
+
+Para ejecutar el programa, sigue estos pasos:
+
+## Requisitos Previos
+
+- Asegúrate de tener Python instalado en tu sistema.
+
+## Instalación de Pygame
+
+1. Abre tu terminal o línea de comandos.
+2. Instala Pygame ejecutando el siguiente comando:
+
+    ```
+    pip install pygame
+    ```
+
+
+## Ejecución del Programa
+
+Una vez instalado Python y Pygame, puedes ejecutar el programa de la siguiente manera:
+
+1. Abre tu terminal o línea de comandos.
+2. Navega hasta el directorio donde se encuentra el archivo `main.py`.
+3. Ejecuta el siguiente comando:
+
+    ```
+    python main.py
+    ```
+
+Esto iniciará el programa.
+
 
 # Modo de Uso
 
