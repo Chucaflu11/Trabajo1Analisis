@@ -5,11 +5,9 @@ import threading
 
 from algorithm import DominoBoard
 
-# Global variable to store the solutions
 solutions = []
 matrix = []
 
-# Global variable to store the current solution index
 current_solution_index = 0
 calculating = False
 
@@ -29,7 +27,6 @@ def print_assets(screen, assets):
     screen.blit(assets['Flechita'], (795, 397))
     screen.blit(assets['Icono_Matriz'], (700, 355))
 
-# Función para manejar eventos de entrada
 def handle_input_events(input_boxes, buttons):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -40,7 +37,6 @@ def handle_input_events(input_boxes, buttons):
         for button in buttons:
             button.handle_event(event)
 
-# Clase para crear un cuadro de entrada
 class InputBox:
     def __init__(self, x, y, width, height, text=''):
         self.rect = pygame.Rect(x, y, width, height)
@@ -53,24 +49,18 @@ class InputBox:
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            # Si se hace clic en el cuadro de entrada, activarlo
             if self.rect.collidepoint(event.pos):
                 self.active = not self.active
             else:
                 self.active = False
-            # Cambiar el color del cuadro según si está activo o no
             self.color = self.color_active if self.active else self.color_inactive
         if event.type == pygame.KEYDOWN:
-            # Si el cuadro de entrada está activo, manejar los eventos de teclado
             if self.active:
                 if event.key == pygame.K_RETURN:
-                    # Si se presiona Enter, dejar de editar
                     self.active = False
                 elif event.key == pygame.K_BACKSPACE:
-                    # Si se presiona retroceso, eliminar un carácter
                     self.text = self.text[:-1]
                 else:
-                    # Agregar caracteres al texto
                     self.text += event.unicode
 
     def draw(self, screen):
@@ -82,8 +72,6 @@ class InputBox:
     
     def get_text(self):
         return self.text
-
-
 
 class Button:
     def __init__(self, x, y, image_name, callback):
@@ -120,11 +108,9 @@ class Board:
         self.colors = {0: pygame.Color('white'), 1: pygame.Color((157, 129, 137)), 2: pygame.Color((106, 190, 167))}
 
     def draw(self, screen, matrix):
-        # Draw the main rectangle
         pygame.draw.rect(screen, pygame.Color('black'), pygame.Rect(self.x, self.y, self.width, self.height), 2)
 
         if matrix:
-            # Draw the cells
             for i in range(self.m):
                 for j in range(self.n):
                     cell_x = self.x + j * self.cell_width
@@ -132,7 +118,6 @@ class Board:
                     cell_color = self.colors[matrix[i][j]]
                     pygame.draw.rect(screen, cell_color, pygame.Rect(cell_x, cell_y, self.cell_width, self.cell_height))
 
-                    # Draw a black border around the cell
                     pygame.draw.rect(screen, pygame.Color('black'), pygame.Rect(cell_x, cell_y, self.cell_width, self.cell_height), 1)
             
             font = pygame.font.Font(None, 36)

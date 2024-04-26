@@ -1,4 +1,3 @@
-import time
 
 class DominoBoard:
 
@@ -105,15 +104,3 @@ class DominoBoard:
                 print(row)
             print("\n")
 
-""" # There would always be solutions not considered, because of the way the algorithm is implemented.
-rows = 4
-cols = 3
-domino_board = DominoBoard(rows, cols)
-start_time = time.time()
-domino_board.find_solutions()
-end_time = time.time()
-domino_board.print_all_solutions()
-
-
-print(f"The algorithm took {end_time - start_time} seconds to find all solutions for a {rows}x{cols} board.")
-# O((n*m)^2) time complexity, where n is the number of rows and m is the number of columns in the board """
