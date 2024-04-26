@@ -1,8 +1,16 @@
 import pygame
 import sys
 import os
+import threading
 
 from algorithm import DominoBoard
+
+# Global variable to store the solutions
+solutions = []
+matrix = []
+
+# Global variable to store the current solution index
+current_solution_index = 0
 
 def load_assets(directory):
     assets = {}
@@ -39,7 +47,7 @@ class InputBox:
         self.color_active = pygame.Color((9, 51, 58))
         self.color = self.color_inactive
         self.text = text
-        self.font = pygame.font.Font(None, 16)
+        self.font = pygame.font.Font(None, 20)
         self.active = False
 
     def handle_event(self, event):
@@ -73,88 +81,140 @@ class InputBox:
     
     def get_text(self):
         return self.text
-    
+
+
+
 class Button:
     def __init__(self, x, y, image_name, callback):
         self.image = image_name
         self.rect = self.image.get_rect(topleft=(x, y))
         self.callback = callback
+        self.is_running = False
 
     def handle_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.rect.collidepoint(event.pos):
-                self.callback()
+            if self.rect.collidepoint(event.pos) and not self.is_running:
+                self.is_running = True
+                threading.Thread(target=self.run_callback).start()
+
+    def run_callback(self):
+        self.callback()
+        self.is_running = False
 
     def draw(self, screen):
         screen.blit(self.image, self.rect)
 
 class Board:
-    def __init__(self, x, y, width, height, m, n, matrix):
+    def __init__(self, x, y, width, height, m, n):
         self.x = x
         self.y = y
         self.width = width
         self.height = height
         self.m = m
         self.n = n
-        self.matrix = matrix
         self.cell_width = width // n
         self.cell_height = height // m
         self.colors = {0: pygame.Color('white'), 1: pygame.Color((157, 129, 137)), 2: pygame.Color((106, 190, 167))}
 
-    def draw(self, screen):
+    def draw(self, screen, matrix):
         # Draw the main rectangle
         pygame.draw.rect(screen, pygame.Color('black'), pygame.Rect(self.x, self.y, self.width, self.height), 2)
 
-        # Draw the cells
-        for i in range(self.m):
-            for j in range(self.n):
-                cell_x = self.x + j * self.cell_width
-                cell_y = self.y + i * self.cell_height
-                cell_color = self.colors[self.matrix[i][j]]
-                pygame.draw.rect(screen, cell_color, pygame.Rect(cell_x, cell_y, self.cell_width, self.cell_height))
+        if matrix:
+            # Draw the cells
+            for i in range(self.m):
+                for j in range(self.n):
+                    cell_x = self.x + j * self.cell_width
+                    cell_y = self.y + i * self.cell_height
+                    cell_color = self.colors[matrix[i][j]]
+                    pygame.draw.rect(screen, cell_color, pygame.Rect(cell_x, cell_y, self.cell_width, self.cell_height))
 
-                # Draw a black border around the cell
-                pygame.draw.rect(screen, pygame.Color('black'), pygame.Rect(cell_x, cell_y, self.cell_width, self.cell_height), 1)
+                    # Draw a black border around the cell
+                    pygame.draw.rect(screen, pygame.Color('black'), pygame.Rect(cell_x, cell_y, self.cell_width, self.cell_height), 1)
+            
+            font = pygame.font.Font(None, 36)
+            text = font.render(("Solution {}".format(current_solution_index)), True, (9, 55, 58))
+            screen.blit(text, (250, 510))
+
+    def update_dimensions(self, m, n):
+        self.m = m
+        self.n = n
+        self.cell_width = self.width // n
+        self.cell_height = self.height // m
+
+board = Board(93, 98, 400, 400, 4, 3)  
 
 def set_board(value1, value2):
-    print("Valor 1:", value1.get_text())
-    print("Valor 2:", value2.get_text())
+    global solutions
+    global matrix
+    global board
+    try:
+        dominoBoard = DominoBoard(int(value1.get_text()), int(value2.get_text()))
+        if dominoBoard.is_valid_board():
+            dominoBoard.find_solutions()
+            solutions = dominoBoard.solutions
+            if solutions: matrix = solutions[0]
+            board.update_dimensions(int(value1.get_text()), int(value2.get_text()))
+        else:
+            print('Invalid board')
+    except ValueError:
+        print('Invalid input')
+
+def draw_solution(index):
+    global solutions
+    global matrix
+    if index < len(solutions):
+        matrix = solutions[index]
+    else:
+        print('Invalid solution index')
+
+def next_solution():
+    global current_solution_index
+    global solutions
+    if current_solution_index < len(solutions) - 1:
+        current_solution_index += 1
+        draw_solution(current_solution_index)
+
+def previous_solution():
+    global current_solution_index
+    if current_solution_index > 0:
+        current_solution_index -= 1
+        draw_solution(current_solution_index)
+
 
 def main():
+    global solutions
+    global matrix
+    global board
     pygame.init()
     screen = pygame.display.set_mode((1280, 720))
     clock = pygame.time.Clock()
 
-    assets = load_assets('assets')
-
-    matrix = [[2, 1, 1], [2, 1, 1], [1, 1, 2], [1, 1, 2]]  # Replace this with your actual matrix
-    board = Board(93, 98, 400, 400, 4, 3, matrix)    
+    assets = load_assets('assets')  
 
     input_box1 = InputBox(910, 397, 105, 27)
     input_box2 = InputBox(1101, 397, 105, 27)
     input_boxes = [input_box1, input_box2]
 
     set_button = Button(950, 500, assets['SET'], lambda: set_board(input_box1, input_box2))
-    dropdown_button = Button(500, 85, assets['Icono_Lista_Soluciones'], lambda: set_board(input_box1, input_box2))
-    right_button = Button(440, 500, assets['Flecha_Siguiente'], lambda: set_board(input_box1, input_box2))
-    left_button = Button(90, 500, assets['Flecha_Anterior'], lambda: set_board(input_box1, input_box2))
+    right_button = Button(440, 500, assets['Flecha_Siguiente'], next_solution)
+    left_button = Button(90, 500, assets['Flecha_Anterior'], previous_solution)
 
     done = False
 
-    buttons = [set_button, dropdown_button, right_button, left_button]
+    buttons = [set_button, right_button, left_button]
 
     while not done:
         handle_input_events(input_boxes, buttons)
         screen.fill((251, 241, 243))
         print_assets(screen, assets)
 
-        board.draw(screen)
+        board.draw(screen, matrix)
 
         for box in input_boxes:
             box.draw(screen)
 
         set_button.draw(screen)
-        dropdown_button.draw(screen)
         right_button.draw(screen)
         left_button.draw(screen)
 
